@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "postinstall": "prisma skills sync || exit 0",
-    "seed": "tsx prisma/seed.ts"
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "postinstall": "prisma generate && prisma skills sync || exit 0",
+  "seed": "tsx prisma/seed.ts"
+
   },
   "dependencies": {
     "@prisma/client": "^7.10.0",
