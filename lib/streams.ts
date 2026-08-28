@@ -32,6 +32,7 @@ export type Stream = {
   description: string;
   icon: LucideIcon;
   accent: string; // tailwind gradient classes
+  image: string; // representative photo, unsplash
   subjects: Subject[];
 };
 
@@ -45,6 +46,8 @@ export const STREAMS: Stream[] = [
       "Every Technology-stream student sits Science for Technology and ICT, then picks a third subject: Engineering Technology or Bio Systems Technology.",
     icon: Cpu,
     accent: "from-blue-600 to-indigo-600",
+    image:
+      "https://images.unsplash.com/photo-1606206873764-fd15e242df52?auto=format&fit=crop&w=1600&q=80",
     subjects: [
       {
         slug: "science-for-technology",
@@ -98,6 +101,8 @@ export const STREAMS: Stream[] = [
       "Combined Mathematics, Physics and Chemistry — the standard route into engineering, IT and architecture degrees.",
     icon: Sigma,
     accent: "from-slate-700 to-slate-900",
+    image:
+      "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1600&q=80",
     subjects: [
       {
         slug: "combined-mathematics",
@@ -137,6 +142,8 @@ export const STREAMS: Stream[] = [
       "Biology, Physics and Chemistry — the standard route into medicine, dentistry, veterinary science and biotechnology.",
     icon: Dna,
     accent: "from-emerald-600 to-teal-700",
+    image:
+      "https://images.unsplash.com/photo-1628595351029-c2bf17511435?auto=format&fit=crop&w=1600&q=80",
     subjects: [
       {
         slug: "biology",
@@ -176,6 +183,8 @@ export const STREAMS: Stream[] = [
       "Accounting, Business Studies and Economics (or ICT) — the route into finance, management and business degrees.",
     icon: Landmark,
     accent: "from-amber-600 to-orange-700",
+    image:
+      "https://images.unsplash.com/photo-1707157284454-553ef0a4ed0d?auto=format&fit=crop&w=1600&q=80",
     subjects: [
       {
         slug: "accounting",
@@ -215,6 +224,8 @@ export const STREAMS: Stream[] = [
       "The widest range of subject combinations, spanning languages, law, media and the social sciences.",
     icon: Palette,
     accent: "from-rose-600 to-pink-700",
+    image:
+      "https://images.unsplash.com/photo-1499447155021-4907f71b9ef5?auto=format&fit=crop&w=1600&q=80",
     subjects: [
       {
         slug: "political-science",

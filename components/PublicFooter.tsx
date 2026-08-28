@@ -1,27 +1,21 @@
 import Link from "next/link";
-import { FlaskConical } from "lucide-react";
 import { STREAMS } from "@/lib/streams";
 
 export default function PublicFooter() {
   return (
-    <footer className="border-t border-slate-200 bg-white">
+    <footer className="border-t border-black/5 bg-[#f5f5f7]">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-              <FlaskConical className="h-4 w-4" strokeWidth={2.25} />
-            </span>
-            <span className="text-[15px] font-bold tracking-tight text-slate-900">
-              BrainPath
-            </span>
-          </div>
-          <p className="mt-4 max-w-[220px] text-sm leading-relaxed text-slate-500">
+          <span className="text-[15px] font-semibold tracking-tight text-[#1d1d1f]">
+            BrainPath
+          </span>
+          <p className="mt-4 max-w-[220px] text-sm leading-relaxed text-[#1d1d1f]/50">
             The exam-blueprint-weighted roadmap for G.C.E. A/L students.
           </p>
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#1d1d1f]/40">
             Streams
           </p>
           <ul className="mt-4 space-y-2.5">
@@ -29,7 +23,7 @@ export default function PublicFooter() {
               <li key={stream.slug}>
                 <Link
                   href={`/streams/${stream.slug}`}
-                  className="text-sm text-slate-600 hover:text-slate-900"
+                  className="text-sm text-[#1d1d1f]/60 hover:text-[#1d1d1f]"
                 >
                   {stream.name}
                 </Link>
@@ -39,22 +33,22 @@ export default function PublicFooter() {
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#1d1d1f]/40">
             Account
           </p>
           <ul className="mt-4 space-y-2.5">
             <li>
-              <Link href="/signup" className="text-sm text-slate-600 hover:text-slate-900">
+              <Link href="/signup" className="text-sm text-[#1d1d1f]/60 hover:text-[#1d1d1f]">
                 Create account
               </Link>
             </li>
             <li>
-              <Link href="/login" className="text-sm text-slate-600 hover:text-slate-900">
+              <Link href="/login" className="text-sm text-[#1d1d1f]/60 hover:text-[#1d1d1f]">
                 Log in
               </Link>
             </li>
             <li>
-              <Link href="/dashboard" className="text-sm text-slate-600 hover:text-slate-900">
+              <Link href="/dashboard" className="text-sm text-[#1d1d1f]/60 hover:text-[#1d1d1f]">
                 SFT dashboard
               </Link>
             </li>
@@ -62,17 +56,17 @@ export default function PublicFooter() {
         </div>
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[#1d1d1f]/40">
             Status
           </p>
-          <p className="mt-4 text-sm leading-relaxed text-slate-500">
+          <p className="mt-4 text-sm leading-relaxed text-[#1d1d1f]/50">
             Science for Technology is live. Every other subject is in active
             development and open for early preview.
           </p>
         </div>
       </div>
 
-      <div className="border-t border-slate-100 px-6 py-6 text-center text-xs text-slate-400">
+      <div className="border-t border-black/5 px-6 py-6 text-center text-xs text-[#1d1d1f]/40">
         © {new Date().getFullYear()} BrainPath. Built for G.C.E. A/L students in Sri Lanka.
       </div>
     </footer>
