@@ -1,14 +1,16 @@
 import Link from "next/link";
+import Image from "next/image";
 import { STREAMS } from "@/lib/streams";
+import { FOOTER_LOGO_URL } from "@/lib/brand";
 
 export default function PublicFooter() {
   return (
     <footer className="border-t border-black/5 bg-[#f5f5f7]">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <span className="text-[15px] font-semibold tracking-tight text-[#1d1d1f]">
-            BrainPath
-          </span>
+          <div className="relative h-20 w-full max-w-[220px] origin-left">
+            <Image src={FOOTER_LOGO_URL} alt="BrainPath" fill className="object-contain object-left" sizes="220px" />
+          </div>
           <p className="mt-4 max-w-[220px] text-sm leading-relaxed text-[#1d1d1f]/50">
             The exam-blueprint-weighted roadmap for G.C.E. A/L students.
           </p>

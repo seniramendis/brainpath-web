@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { LOGO_URL } from "@/lib/brand";
 
 const LINKS = [
   { label: "Streams", href: "/#streams" },
@@ -17,10 +19,10 @@ export default function PublicNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-black/5 bg-white/70 backdrop-blur-xl backdrop-saturate-150">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-6">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-[19px] font-semibold tracking-tight text-[#1d1d1f]">
-            BrainPath
-          </span>
+        <Link href="/" className="flex items-center">
+          <div className="relative h-9 w-9 shrink-0">
+            <Image src={LOGO_URL} alt="BrainPath" fill className="object-contain" sizes="36px" priority />
+          </div>
         </Link>
 
         <nav className="ml-2 hidden items-center gap-1 md:flex">

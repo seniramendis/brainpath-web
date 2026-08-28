@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Play, FileText, Atom, Dna, FlaskConical, Sigma } from "lucide-react";
 
 const TABS = ["All", "Biology", "Physics", "Chemistry", "Maths"];
@@ -9,32 +10,32 @@ const RESOURCES = [
   {
     subject: "Physics",
     subjectIcon: Atom,
-    gradient: "from-slate-700 via-slate-800 to-slate-900",
+    image:
+      "https://images.unsplash.com/photo-1633493702341-4d04841df53b?auto=format&fit=crop&w=1200&q=80",
     priority: "High Priority",
     priorityClass: "text-rose-600",
     title: "Force & Motion",
     weightage: 95,
-    barClass: "bg-blue-600",
   },
   {
     subject: "Biology",
     subjectIcon: Dna,
-    gradient: "from-cyan-700 via-teal-800 to-slate-900",
+    image:
+      "https://images.unsplash.com/photo-1628595351029-c2bf17511435?auto=format&fit=crop&w=1200&q=80",
     priority: "Medium Priority",
     priorityClass: "text-orange-600",
     title: "Cellular Structures",
     weightage: 70,
-    barClass: "bg-orange-600",
   },
   {
     subject: "Chemistry",
     subjectIcon: FlaskConical,
-    gradient: "from-blue-800 via-indigo-900 to-slate-950",
+    image:
+      "https://images.unsplash.com/photo-1694230155228-cdde50083573?auto=format&fit=crop&w=1200&q=80",
     priority: "High Priority",
     priorityClass: "text-rose-600",
     title: "Chemical Bonding",
     weightage: 85,
-    barClass: "bg-blue-600",
   },
 ];
 
@@ -55,17 +56,17 @@ export default function ResourceHubPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+      <div className="animate-fade-up">
+        <h1 className="text-3xl font-semibold tracking-tightest text-[#1d1d1f] sm:text-4xl">
           Resource Hub
         </h1>
-        <p className="mt-1 text-slate-500">
+        <p className="mt-1.5 text-[15px] text-[#1d1d1f]/55">
           Explore study modules, lectures, and revision notes.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-slate-200">
+      <div className="flex items-center gap-1 border-b border-black/[0.06]">
         {TABS.map((tab) => {
           const active = tab === activeTab;
           const Icon = TAB_ICONS[tab];
@@ -73,13 +74,13 @@ export default function ResourceHubPage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors ${
+              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-[13.5px] font-medium transition-colors ${
                 active
-                  ? "border-blue-600 text-blue-700"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-[#0071e3] text-[#0071e3]"
+                  : "border-transparent text-[#1d1d1f]/45 hover:text-[#1d1d1f]"
               }`}
             >
-              {Icon && <Icon className="h-3.5 w-3.5" />}
+              {Icon && <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />}
               {tab}
             </button>
           );
@@ -89,47 +90,53 @@ export default function ResourceHubPage() {
       {/* Cards */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((res) => {
-          const SubjectIcon = res.subjectIcon;
           return (
             <div
               key={res.title}
-              className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+              className="group overflow-hidden rounded-2xl border border-black/[0.06] bg-white transition-colors hover:border-[#0071e3]/20"
             >
-              {/* Thumbnail */}
-              <div
-                className={`relative flex h-44 items-center justify-center bg-gradient-to-br ${res.gradient}`}
-              >
-                <SubjectIcon className="h-16 w-16 text-white/15" strokeWidth={1} />
+              {/* Thumbnail — real photo, Apple product-card style */}
+              <div className="relative h-44 overflow-hidden">
+                <Image
+                  src={res.image}
+                  alt={res.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  sizes="(max-width: 1024px) 100vw, 400px"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
                 <span
-                  className={`absolute right-3 top-3 rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold ${res.priorityClass}`}
+                  className={`absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur ${res.priorityClass}`}
                 >
                   ● {res.priority}
                 </span>
-                <span className="absolute bottom-3 left-3 rounded-md bg-white px-2.5 py-1 text-xs font-semibold text-slate-800">
+                <span className="absolute bottom-3 left-3 rounded-md bg-white/90 px-2.5 py-1 text-[11px] font-medium text-[#1d1d1f] backdrop-blur">
                   {res.subject}
                 </span>
               </div>
 
               {/* Body */}
               <div className="p-5">
-                <h3 className="text-lg font-bold text-slate-900">{res.title}</h3>
-                <div className="mt-3 flex items-center justify-between text-sm">
-                  <span className="text-slate-400">Weightage</span>
-                  <span className="font-bold text-slate-800">{res.weightage}%</span>
+                <h3 className="text-[15px] font-semibold tracking-tight text-[#1d1d1f]">
+                  {res.title}
+                </h3>
+                <div className="mt-3 flex items-center justify-between text-[13px]">
+                  <span className="text-[#1d1d1f]/40">Weightage</span>
+                  <span className="font-semibold text-[#1d1d1f]">{res.weightage}%</span>
                 </div>
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/[0.06]">
                   <div
-                    className={`h-full rounded-full ${res.barClass}`}
+                    className="h-full rounded-full bg-[#0071e3]"
                     style={{ width: `${res.weightage}%` }}
                   />
                 </div>
 
-                <div className="mt-5 flex gap-3">
-                  <button className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/25 hover:bg-blue-700">
+                <div className="mt-5 flex gap-2.5">
+                  <button className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#0071e3] py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#0077ed]">
                     <Play className="h-3.5 w-3.5 fill-current" />
                     Watch
                   </button>
-                  <button className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-slate-100 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+                  <button className="flex flex-1 items-center justify-center gap-2 rounded-full bg-black/[0.05] py-2.5 text-[13px] font-medium text-[#1d1d1f] transition-colors hover:bg-black/[0.08]">
                     <FileText className="h-3.5 w-3.5" />
                     Notes
                   </button>
