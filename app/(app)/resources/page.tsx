@@ -66,7 +66,7 @@ export default function ResourceHubPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-black/[0.06]">
+      <div className="-mx-4 flex items-center gap-1 overflow-x-auto border-b border-black/[0.06] px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => {
           const active = tab === activeTab;
           const Icon = TAB_ICONS[tab];
@@ -74,7 +74,7 @@ export default function ResourceHubPage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-[13.5px] font-medium transition-colors ${
+              className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3.5 py-2.5 text-[13.5px] font-medium whitespace-nowrap transition-colors sm:px-4 ${
                 active
                   ? "border-[#0071e3] text-[#0071e3]"
                   : "border-transparent text-[#1d1d1f]/45 hover:text-[#1d1d1f]"

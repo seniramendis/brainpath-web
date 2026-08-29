@@ -27,7 +27,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-[264px] shrink-0 flex-col border-r border-black/[0.06] bg-white">
+    <aside className="hidden h-screen w-[264px] shrink-0 flex-col border-r border-black/[0.06] bg-white lg:flex">
       {/* Logo */}
       <Link href="/" className="flex items-center px-6 pt-7 pb-6">
         <div className="relative h-14 w-14 shrink-0">

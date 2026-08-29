@@ -86,11 +86,11 @@ export default function AnalyticsOverviewPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2.5 text-[13px] font-medium text-[#1d1d1f] hover:bg-black/[0.03]">
+          <button className="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-black/10 bg-white px-4 py-2.5 text-[13px] font-medium text-[#1d1d1f] hover:bg-black/[0.03] sm:flex-none">
             <Calendar className="h-3.5 w-3.5" strokeWidth={1.75} />
             Last 30 Days
           </button>
-          <button className="rounded-full bg-[#0071e3] px-4 py-2.5 text-[13px] font-medium text-white hover:bg-[#0077ed]">
+          <button className="flex-1 whitespace-nowrap rounded-full bg-[#0071e3] px-4 py-2.5 text-[13px] font-medium text-white hover:bg-[#0077ed] sm:flex-none">
             Generate Report
           </button>
         </div>
@@ -98,10 +98,10 @@ export default function AnalyticsOverviewPage() {
 
       {/* Weighted Exam Readiness */}
       <div
-        className="rounded-2xl border border-black/[0.06] bg-white p-8 animate-fade-up"
+        className="rounded-2xl border border-black/[0.06] bg-white p-5 animate-fade-up sm:p-8"
         style={{ animationDelay: "0.05s" }}
       >
-        <div className="flex flex-col items-center gap-8 sm:flex-row sm:justify-between">
+        <div className="flex flex-col items-center gap-8 text-center sm:flex-row sm:justify-between sm:text-left">
           <div className="max-w-md">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0071e3]/[0.08] px-3 py-1 text-[11px] font-medium text-[#0071e3]">
               <TrendingUp className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -114,7 +114,7 @@ export default function AnalyticsOverviewPage() {
               Based on your recent model papers, quizzes, and historical data,
               you are currently on track for a high-tier grade.
             </p>
-            <div className="mt-6 flex gap-10">
+            <div className="mt-6 flex justify-center gap-10 sm:justify-start">
               <div>
                 <p className="text-[11px] font-medium uppercase tracking-wide text-[#1d1d1f]/35">
                   Target Goal
@@ -225,7 +225,8 @@ export default function AnalyticsOverviewPage() {
           Recent Activity
         </h2>
         <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white">
-          <table className="w-full text-left">
+          {/* Desktop / tablet table */}
+          <table className="hidden w-full text-left sm:table">
             <thead>
               <tr className="bg-[#fafafa] text-[11px] font-medium uppercase tracking-wide text-[#1d1d1f]/40">
                 <th className="px-6 py-3.5">Assessment Name</th>
@@ -274,6 +275,34 @@ export default function AnalyticsOverviewPage() {
               })}
             </tbody>
           </table>
+
+          {/* Mobile card list */}
+          <div className="divide-y divide-black/[0.05] sm:hidden">
+            {ACTIVITY.map((row) => {
+              const Icon = row.icon;
+              return (
+                <div key={row.name} className="flex items-center gap-3 px-4 py-4">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#0071e3]/[0.08] text-[#0071e3]">
+                    <Icon className="h-4 w-4" strokeWidth={1.75} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13.5px] font-medium text-[#1d1d1f]">{row.name}</p>
+                    <p className="mt-0.5 text-[12px] text-[#1d1d1f]/45">{row.date}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className="text-[12px] font-semibold text-[#1d1d1f]">{row.score}%</span>
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/[0.06]">
+                        <div
+                          className={`h-full rounded-full ${row.barColor}`}
+                          style={{ width: `${row.score}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 shrink-0 text-[#1d1d1f]/30" />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

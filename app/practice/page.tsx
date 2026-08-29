@@ -60,26 +60,26 @@ export default function PracticeSimulatorPage() {
   return (
     <div className="flex min-h-screen flex-col bg-[#fafafa]">
       {/* Header */}
-      <header className="flex h-[64px] shrink-0 items-center gap-4 border-b border-black/[0.06] bg-white/80 px-8 backdrop-blur-xl">
-        <Link href="/dashboard" className="flex items-center">
-          <div className="relative h-9 w-9 shrink-0">
+      <header className="flex h-[60px] shrink-0 items-center gap-3 border-b border-black/[0.06] bg-white/80 px-4 backdrop-blur-xl sm:h-[64px] sm:gap-4 sm:px-8">
+        <Link href="/dashboard" className="flex shrink-0 items-center">
+          <div className="relative h-8 w-8 shrink-0 sm:h-9 sm:w-9">
             <Image src={LOGO_URL} alt="BrainPath" fill className="object-contain" sizes="36px" />
           </div>
         </Link>
-        <span className="h-4 w-px bg-black/10" />
-        <span className="text-[13px] font-medium text-[#1d1d1f]/50">
+        <span className="hidden h-4 w-px bg-black/10 sm:block" />
+        <span className="hidden truncate text-[13px] font-medium text-[#1d1d1f]/50 sm:block">
           Physics Unit 2: Practice Set Alpha
         </span>
         <Link
           href="/dashboard"
-          className="ml-auto flex items-center gap-1.5 text-[13px] font-medium text-rose-500 hover:text-rose-600"
+          className="ml-auto flex shrink-0 items-center gap-1.5 text-[13px] font-medium text-rose-500 hover:text-rose-600"
         >
           <X className="h-3.5 w-3.5" />
-          Exit Simulator
+          <span className="hidden sm:inline">Exit Simulator</span>
         </Link>
       </header>
 
-      <div className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 gap-6 px-8 py-6 lg:grid-cols-[300px_1fr]">
+      <div className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-1 gap-4 px-4 py-4 sm:gap-6 sm:px-6 sm:py-6 lg:grid-cols-[300px_1fr] lg:px-8">
         {/* Left Sidebar */}
         <aside className="lg:sticky lg:top-6 lg:h-fit">
           <div className="space-y-5 rounded-2xl border border-black/[0.06] bg-white p-5">

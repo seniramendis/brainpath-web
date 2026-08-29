@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowRight, Eye, EyeOff, FlaskConical } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { LOGO_URL } from "@/lib/brand";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,22 +20,27 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-6 py-16">
-      <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm shadow-blue-600/30">
-        <FlaskConical className="h-5 w-5" strokeWidth={2.25} />
+    <section className="mx-auto flex min-h-[calc(100vh-56px)] w-full max-w-md flex-col justify-center px-5 py-10 sm:min-h-[70vh] sm:px-6 sm:py-16">
+      <div className="mx-auto flex flex-col items-center animate-fade-up">
+        <div className="relative h-24 w-24 sm:h-28 sm:w-28">
+          <Image src={LOGO_URL} alt="BrainPath" fill className="object-contain" sizes="112px" priority />
+        </div>
+
+        <h1 className="mt-3 text-center text-[26px] font-semibold tracking-tightest text-[#1d1d1f] sm:mt-4 sm:text-[32px]">
+          Welcome back.
+        </h1>
+        <p className="mt-1.5 max-w-xs text-center text-[14px] leading-snug text-[#1d1d1f]/55 sm:text-[15px]">
+          Log in to pick up your roadmap where you left off.
+        </p>
       </div>
 
-      <h1 className="mt-6 text-center text-2xl font-extrabold tracking-tight text-slate-900">
-        Welcome back
-      </h1>
-      <p className="mt-1.5 text-center text-sm text-slate-500">
-        Log in to pick up your roadmap where you left off.
-      </p>
-
-      <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-8 shadow-[0_8px_30px_-16px_rgba(15,23,42,0.12)]">
+      <div
+        className="mt-7 rounded-[1.5rem] border border-black/[0.06] bg-white p-5 shadow-[0_8px_30px_-16px_rgba(0,0,0,0.08)] animate-fade-up sm:mt-8 sm:rounded-[1.75rem] sm:p-8"
+        style={{ animationDelay: "0.05s" }}
+      >
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="text-xs font-semibold text-slate-600">
+            <label htmlFor="email" className="text-[13px] font-medium text-[#1d1d1f]/60">
               Email
             </label>
             <input
@@ -42,18 +49,18 @@ export default function LoginPage() {
               required
               autoComplete="email"
               placeholder="you@example.com"
-              className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-400 focus:bg-white"
+              className="mt-1.5 w-full rounded-xl border border-transparent bg-black/[0.04] px-4 py-3 text-[15px] text-[#1d1d1f] outline-none transition-colors placeholder:text-[#1d1d1f]/35 focus:border-[#0071e3]/30 focus:bg-white focus:ring-4 focus:ring-[#0071e3]/[0.08]"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="text-xs font-semibold text-slate-600">
+              <label htmlFor="password" className="text-[13px] font-medium text-[#1d1d1f]/60">
                 Password
               </label>
               <button
                 type="button"
-                className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                className="text-[13px] font-medium text-[#0071e3] hover:text-[#0077ed]"
               >
                 Forgot password?
               </button>
@@ -65,18 +72,18 @@ export default function LoginPage() {
                 required
                 autoComplete="current-password"
                 placeholder="Your password"
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-10 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-400 focus:bg-white"
+                className="w-full rounded-xl border border-transparent bg-black/[0.04] px-4 py-3 pr-11 text-[15px] text-[#1d1d1f] outline-none transition-colors placeholder:text-[#1d1d1f]/35 focus:border-[#0071e3]/30 focus:bg-white focus:ring-4 focus:ring-[#0071e3]/[0.08]"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#1d1d1f]/35 hover:text-[#1d1d1f]/60"
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <EyeOff className="h-4 w-4" strokeWidth={1.75} />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-4 w-4" strokeWidth={1.75} />
                 )}
               </button>
             </div>
@@ -85,22 +92,25 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/25 transition-colors hover:bg-blue-700 disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0071e3] px-4 py-3 text-[14.5px] font-medium text-white transition-colors hover:bg-[#0077ed] disabled:opacity-60"
           >
             {submitting ? "Logging in…" : "Log in"}
-            {!submitting && <ArrowRight className="h-4 w-4" />}
+            {!submitting && <ArrowRight className="h-4 w-4" strokeWidth={2} />}
           </button>
         </form>
 
-        <p className="mt-5 text-center text-xs leading-relaxed text-slate-400">
+        <p className="mt-5 text-center text-[12px] leading-relaxed text-[#1d1d1f]/40">
           Account sync is still in development — this takes you straight
           into the live SFT dashboard for now.
         </p>
       </div>
 
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p
+        className="mt-6 text-center text-[14px] text-[#1d1d1f]/55 animate-fade-up"
+        style={{ animationDelay: "0.1s" }}
+      >
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-semibold text-blue-600 hover:text-blue-700">
+        <Link href="/signup" className="font-medium text-[#0071e3] hover:text-[#0077ed]">
           Sign up for free
         </Link>
       </p>
