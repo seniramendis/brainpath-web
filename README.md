@@ -1,5 +1,35 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Authentication
+
+Real email/password + Google sign-in was added on top of this template. Quick setup:
+
+```bash
+cp .env.example .env       # then fill in AUTH_SECRET (and Google keys, optional)
+npm install
+npx prisma migrate dev --name add-users   # creates dev.db and the User table
+npm run seed                              # optional: seeds the SFT module data
+npm run dev
+```
+
+- `AUTH_SECRET` — required. Generate one with `openssl rand -base64 32`.
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — optional. Without them the
+  "Continue with Google" button redirects back to `/login` with a friendly
+  "not set up yet" message instead of erroring. To enable it, create an
+  OAuth 2.0 **Web application** client at
+  [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
+  and add `http://localhost:3000/api/auth/google/callback` (plus your
+  production URL equivalent) as an authorized redirect URI.
+
+How it works, in short:
+- `/dashboard`, `/practice`, `/analytics`, `/resources`, and `/settings` are
+  gated by `proxy.ts` (Next.js 16's replacement for `middleware.ts`) — no
+  session cookie, no access.
+- Sessions are signed, httpOnly JWT cookies (`lib/session.ts`, via `jose`).
+- Passwords are hashed with bcrypt (`lib/passwords.ts`).
+- Signup/login/logout are Server Actions in `app/actions/auth.ts`.
+- Google sign-in is a hand-rolled OAuth flow under `app/api/auth/google/`.
+
 ## Getting Started
 
 First, run the development server:

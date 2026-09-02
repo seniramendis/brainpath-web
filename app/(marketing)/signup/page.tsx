@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { ArrowRight, Eye, EyeOff, ShieldCheck, Zap, Route } from "lucide-react";
 import { LOGO_URL } from "@/lib/brand";
+import { signupAction, type AuthFormState } from "@/app/actions/auth";
+import GoogleButton from "@/components/GoogleButton";
 
 const PERKS = [
   { icon: Route, text: "A roadmap sequenced by exam priority weight" },
@@ -14,17 +15,11 @@ const PERKS = [
 ];
 
 export default function SignupPage() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    // Accounts aren't wired up to a backend yet — this drops straight into
-    // the live SFT demo so the flow can be reviewed end to end.
-    router.push("/dashboard");
-  }
+  const [state, formAction, pending] = useActionState<AuthFormState, FormData>(
+    signupAction,
+    undefined
+  );
 
   return (
     <section className="mx-auto flex max-w-6xl flex-col px-5 py-8 sm:px-6 sm:py-12 lg:flex-row lg:items-center lg:gap-16 lg:py-20">
@@ -85,19 +80,39 @@ export default function SignupPage() {
             Free — no card required.
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div className="mt-5">
+            <GoogleButton />
+          </div>
+
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-black/[0.06]" />
+            <span className="text-[12px] font-medium text-[#1d1d1f]/35">or</span>
+            <div className="h-px flex-1 bg-black/[0.06]" />
+          </div>
+
+          {state?.error && (
+            <p className="mb-4 rounded-xl bg-rose-50 px-3.5 py-2.5 text-[13px] font-medium text-rose-600">
+              {state.error}
+            </p>
+          )}
+
+          <form action={formAction} className="space-y-4">
             <div>
               <label htmlFor="name" className="text-[13px] font-medium text-[#1d1d1f]/60">
                 Full name
               </label>
               <input
                 id="name"
+                name="name"
                 type="text"
                 required
                 autoComplete="name"
                 placeholder="Nimal Perera"
                 className="mt-1.5 w-full rounded-xl border border-transparent bg-black/[0.04] px-4 py-3 text-[15px] text-[#1d1d1f] outline-none transition-colors placeholder:text-[#1d1d1f]/35 focus:border-[#0071e3]/30 focus:bg-white focus:ring-4 focus:ring-[#0071e3]/[0.08]"
               />
+              {state?.fieldErrors?.name && (
+                <p className="mt-1 text-[12px] text-rose-500">{state.fieldErrors.name[0]}</p>
+              )}
             </div>
 
             <div>
@@ -106,12 +121,16 @@ export default function SignupPage() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
                 required
                 autoComplete="email"
                 placeholder="you@example.com"
                 className="mt-1.5 w-full rounded-xl border border-transparent bg-black/[0.04] px-4 py-3 text-[15px] text-[#1d1d1f] outline-none transition-colors placeholder:text-[#1d1d1f]/35 focus:border-[#0071e3]/30 focus:bg-white focus:ring-4 focus:ring-[#0071e3]/[0.08]"
               />
+              {state?.fieldErrors?.email && (
+                <p className="mt-1 text-[12px] text-rose-500">{state.fieldErrors.email[0]}</p>
+              )}
             </div>
 
             <div>
@@ -121,6 +140,7 @@ export default function SignupPage() {
               <div className="relative mt-1.5">
                 <input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   minLength={8}
@@ -141,22 +161,20 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
+              {state?.fieldErrors?.password && (
+                <p className="mt-1 text-[12px] text-rose-500">{state.fieldErrors.password[0]}</p>
+              )}
             </div>
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={pending}
               className="flex w-full items-center justify-center gap-2 rounded-full bg-[#0071e3] px-4 py-3 text-[14.5px] font-medium text-white transition-colors hover:bg-[#0077ed] disabled:opacity-60"
             >
-              {submitting ? "Setting up your account…" : "Create account"}
-              {!submitting && <ArrowRight className="h-4 w-4" strokeWidth={2} />}
+              {pending ? "Setting up your account…" : "Create account"}
+              {!pending && <ArrowRight className="h-4 w-4" strokeWidth={2} />}
             </button>
           </form>
-
-          <p className="mt-5 text-center text-[12px] leading-relaxed text-[#1d1d1f]/40">
-            Account sync is still in development — this takes you straight
-            into the live SFT dashboard for now.
-          </p>
 
           <p className="mt-4 text-center text-[14px] text-[#1d1d1f]/55">
             Already have an account?{" "}

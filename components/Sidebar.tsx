@@ -14,6 +14,8 @@ import {
   Play,
 } from "lucide-react";
 import { LOGO_URL } from "@/lib/brand";
+import { logoutAction } from "@/app/actions/auth";
+import type { CurrentUser } from "@/lib/dal";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
@@ -23,7 +25,7 @@ const NAV_ITEMS = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ user }: { user?: CurrentUser }) {
   const pathname = usePathname();
 
   return (
@@ -70,14 +72,32 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className="space-y-0.5 border-t border-black/[0.06] px-4 py-5">
+        {user && (
+          <div className="mb-1 flex items-center gap-2.5 rounded-lg px-3 py-2">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0071e3] text-[13px] font-medium text-white">
+              {(user.name?.trim()?.[0] ?? user.email[0] ?? "?").toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-medium text-[#1d1d1f]">
+                {user.name ?? "Your account"}
+              </p>
+              <p className="truncate text-[11.5px] text-[#1d1d1f]/45">{user.email}</p>
+            </div>
+          </div>
+        )}
         <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-normal text-[#1d1d1f]/55 transition-colors hover:bg-black/[0.03] hover:text-[#1d1d1f]">
           <CircleHelp className="h-[17px] w-[17px] text-[#1d1d1f]/35" strokeWidth={1.75} />
           Help Center
         </button>
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-normal text-rose-500 transition-colors hover:bg-rose-50">
-          <LogOut className="h-[17px] w-[17px]" strokeWidth={1.75} />
-          Logout
-        </button>
+        <form action={logoutAction}>
+          <button
+            type="submit"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13.5px] font-normal text-rose-500 transition-colors hover:bg-rose-50"
+          >
+            <LogOut className="h-[17px] w-[17px]" strokeWidth={1.75} />
+            Logout
+          </button>
+        </form>
       </div>
     </aside>
   );

@@ -3,11 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, Flame, Bell, ChevronDown, X } from "lucide-react";
+import { Search, Flame, Bell, ChevronDown, X, LogOut } from "lucide-react";
 import { LOGO_URL } from "@/lib/brand";
+import { logoutAction } from "@/app/actions/auth";
+import type { CurrentUser } from "@/lib/dal";
 
-export default function TopBar() {
+export default function TopBar({ user }: { user?: CurrentUser }) {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const initial = (user?.name?.trim()?.[0] ?? user?.email?.[0] ?? "?").toUpperCase();
 
   return (
     <header className="sticky top-0 z-30 flex h-[60px] shrink-0 items-center gap-3 border-b border-black/[0.06] bg-white/80 px-4 backdrop-blur-xl sm:h-[68px] sm:gap-4 sm:px-8">
@@ -58,13 +62,44 @@ export default function TopBar() {
 
         <div className="hidden h-5 w-px bg-black/[0.08] sm:block" />
 
-        <button className="flex items-center gap-2 rounded-full py-1 pl-1 pr-1 transition-colors hover:bg-black/[0.04] sm:pr-3">
-          <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#0071e3] text-xs font-medium text-white">
-            S
-          </span>
-          <span className="hidden text-[13.5px] font-medium text-[#1d1d1f] sm:inline">Profile</span>
-          <ChevronDown className="hidden h-3.5 w-3.5 text-[#1d1d1f]/35 sm:block" />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setProfileOpen((v) => !v)}
+            className="flex items-center gap-2 rounded-full py-1 pl-1 pr-1 transition-colors hover:bg-black/[0.04] sm:pr-3"
+          >
+            <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#0071e3] text-xs font-medium text-white">
+              {initial}
+            </span>
+            <span className="hidden max-w-[120px] truncate text-[13.5px] font-medium text-[#1d1d1f] sm:inline">
+              {user?.name ?? "Profile"}
+            </span>
+            <ChevronDown className="hidden h-3.5 w-3.5 text-[#1d1d1f]/35 sm:block" />
+          </button>
+
+          {profileOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
+              <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border border-black/[0.06] bg-white p-1.5 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.18)]">
+                <div className="px-3 py-2">
+                  <p className="truncate text-[13px] font-medium text-[#1d1d1f]">
+                    {user?.name ?? "Your account"}
+                  </p>
+                  <p className="truncate text-[12px] text-[#1d1d1f]/45">{user?.email}</p>
+                </div>
+                <div className="my-1 h-px bg-black/[0.06]" />
+                <form action={logoutAction}>
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-medium text-rose-500 transition-colors hover:bg-rose-50"
+                  >
+                    <LogOut className="h-4 w-4" strokeWidth={1.75} />
+                    Log out
+                  </button>
+                </form>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Mobile search overlay */}
