@@ -5,13 +5,17 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 Real email/password + Google sign-in was added on top of this template. Quick setup:
 
 ```bash
-cp .env.example .env       # then fill in AUTH_SECRET (and Google keys, optional)
+cp .env.example .env       # then fill in DATABASE_URL, AUTH_SECRET (and Google keys, optional)
 npm install
-npx prisma migrate dev --name add-users   # creates dev.db and the User table
+npx prisma migrate dev --name add-users   # creates the User table in your database
 npm run seed                              # optional: seeds the SFT module data
 npm run dev
 ```
 
+- `DATABASE_URL` — required, a real Postgres connection string (e.g. from
+  [Neon](https://neon.tech), Vercel Postgres, or Supabase — all have free
+  tiers). SQLite doesn't work on Vercel because serverless functions don't
+  share a persistent filesystem.
 - `AUTH_SECRET` — required. Generate one with `openssl rand -base64 32`.
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — optional. Without them the
   "Continue with Google" button redirects back to `/login` with a friendly
