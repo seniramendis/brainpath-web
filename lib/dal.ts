@@ -36,3 +36,22 @@ export async function requireUser(): Promise<CurrentUser> {
   }
   return user;
 }
+
+/**
+ * All syllabus modules for the Resource Hub, each with its past papers and
+ * study materials attached. Ordered so the highest-priority tier surfaces
+ * first, then by weightage within a tier.
+ */
+export const getModulesWithResources = cache(async () => {
+  return prisma.module.findMany({
+    orderBy: [{ tier: "asc" }, { priorityPercent: "desc" }],
+    include: {
+      pastPapers: { orderBy: { year: "desc" } },
+      studyMaterials: true,
+    },
+  });
+});
+
+export type ModuleResource = Awaited<
+  ReturnType<typeof getModulesWithResources>
+>[number];

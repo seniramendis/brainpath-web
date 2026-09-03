@@ -18,17 +18,40 @@ model User {
 }
 
 model Module {
-  id              String     @id @default(cuid())
+  id              String          @id @default(cuid())
   name            String
   subject         String
   priorityPercent Float
   tier            Int
   examPart        String
+  videoUrl        String?
   questions       Question[]
+  pastPapers      PastPaper[]
+  studyMaterials  StudyMaterial[]
 }
 
 model Question {
   id       String @id @default(cuid())
   moduleId String
   module   Module @relation(fields: [moduleId], references: [id])
+}
+
+// A downloadable past exam paper scoped to a single syllabus module.
+model PastPaper {
+  id       String @id @default(cuid())
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+  year     Int
+  title    String
+  fileUrl  String
+}
+
+// A downloadable study material (notes, slides, summaries) for a module.
+model StudyMaterial {
+  id       String @id @default(cuid())
+  moduleId String
+  module   Module @relation(fields: [moduleId], references: [id])
+  title    String
+  type     String
+  fileUrl  String
 }

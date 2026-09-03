@@ -4,9 +4,46 @@ import { PrismaPg } from '@prisma/adapter-pg';
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+function slug(name: string) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+// Every module gets the last 3 years of past papers for its exam part, plus
+// a notes set and a slides set. Swap the placeholder `fileUrl`/`videoUrl`
+// values below for your real PDFs (dropped into /public/resources/...) and
+// YouTube links -- the Resource Hub UI already renders whatever is here.
+function pastPapersFor(examPart: string) {
+  return [2023, 2022, 2021].map((year) => ({
+    year,
+    title: `${year} A/L SFT — Part ${examPart}`,
+    fileUrl: `/resources/past-papers/${year}-part-${examPart.toLowerCase()}.pdf`,
+  }));
+}
+
+function studyMaterialsFor(name: string) {
+  const base = slug(name);
+  return [
+    {
+      title: `${name} — Revision Notes`,
+      type: 'Notes',
+      fileUrl: `/resources/notes/${base}-notes.pdf`,
+    },
+    {
+      title: `${name} — Summary Slides`,
+      type: 'Slides',
+      fileUrl: `/resources/notes/${base}-slides.pdf`,
+    },
+  ];
+}
+
 async function main() {
   // Clear existing data to prevent duplicates during testing
   await prisma.question.deleteMany();
+  await prisma.pastPaper.deleteMany();
+  await prisma.studyMaterial.deleteMany();
   await prisma.module.deleteMany();
 
   // Official SFT Modules mapped with Priority Weights and Tiers[cite: 1]
@@ -83,11 +120,19 @@ async function main() {
     }
   ];
 
-  console.log('Seeding official SFT modules...');
+  console.log('Seeding official SFT modules with resources...');
 
   for (const mod of modules) {
     await prisma.module.create({
-      data: mod,
+      data: {
+        ...mod,
+        // No video wired up yet -- paste a real YouTube URL here (e.g.
+        // "https://www.youtube.com/watch?v=XXXXXXXXXXX") and it renders in
+        // the Resource Hub's inline player automatically.
+        videoUrl: null,
+        pastPapers: { create: pastPapersFor(mod.examPart) },
+        studyMaterials: { create: studyMaterialsFor(mod.name) },
+      },
     });
   }
 
