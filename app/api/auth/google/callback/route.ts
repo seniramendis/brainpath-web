@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createSession } from "@/lib/session";
+import { getRequestIp, checkRateLimit, oauthLimiter } from "@/lib/rate-limit";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
@@ -33,6 +34,11 @@ function loginError(request: NextRequest, code: string) {
 }
 
 export async function GET(request: NextRequest) {
+  const { success: rateOk } = await checkRateLimit(oauthLimiter, getRequestIp(request));
+  if (!rateOk) {
+    return loginError(request, "rate_limited");
+  }
+
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIp, checkRateLimit, oauthLimiter } from "@/lib/rate-limit";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const STATE_COOKIE = "g_oauth_state";
@@ -8,6 +9,13 @@ function getRedirectUri(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const { success } = await checkRateLimit(oauthLimiter, getRequestIp(request));
+  if (!success) {
+    const url = new URL("/login", request.url);
+    url.searchParams.set("error", "rate_limited");
+    return NextResponse.redirect(url);
+  }
+
   const clientId = process.env.GOOGLE_CLIENT_ID;
 
   if (!clientId) {

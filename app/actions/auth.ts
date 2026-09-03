@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/passwords";
 import { createSession, deleteSession } from "@/lib/session";
+import { checkRateLimit, getClientIp, loginLimiter, loginEmailLimiter, signupLimiter } from "@/lib/rate-limit";
 
 export type AuthFormState = {
   error?: string;
@@ -26,6 +27,12 @@ export async function signupAction(
   _prevState: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
+  const ip = await getClientIp();
+  const { success } = await checkRateLimit(signupLimiter, ip);
+  if (!success) {
+    return { error: "Too many accounts created from this network. Please try again in an hour." };
+  }
+
   const validated = SignupSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -57,6 +64,12 @@ export async function loginAction(
   _prevState: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
+  const ip = await getClientIp();
+  const { success } = await checkRateLimit(loginLimiter, ip);
+  if (!success) {
+    return { error: "Too many login attempts. Please wait a minute and try again." };
+  }
+
   const validated = LoginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -67,6 +80,11 @@ export async function loginAction(
   }
 
   const { email, password } = validated.data;
+
+  const { success: emailOk } = await checkRateLimit(loginEmailLimiter, email);
+  if (!emailOk) {
+    return { error: "Too many login attempts on this account. Please wait 15 minutes and try again." };
+  }
 
   const user = await prisma.user.findUnique({ where: { email } });
 

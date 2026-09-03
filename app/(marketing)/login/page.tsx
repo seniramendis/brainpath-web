@@ -15,6 +15,7 @@ const GOOGLE_ERROR_MESSAGES: Record<string, string> = {
   google_token_exchange_failed: "We couldn't verify that with Google. Please try again.",
   google_userinfo_failed: "We couldn't verify that with Google. Please try again.",
   google_no_email: "Your Google account needs a verified email to sign in.",
+  rate_limited: "Too many attempts. Please wait a minute and try again.",
 };
 
 function LoginForm() {
