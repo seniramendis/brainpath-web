@@ -39,6 +39,26 @@ function studyMaterialsFor(name: string) {
   ];
 }
 
+// Reading-list entries for the "Articles" tab of the Resource Hub. These are
+// live search links (e-thaksalawa + Google) scoped to the module name, not
+// scraped article pages -- swap in specific article URLs here once you've
+// picked the ones you want students to read for this module.
+function articlesFor(name: string) {
+  const q = encodeURIComponent(name);
+  return [
+    {
+      title: `${name} — e-thaksalawa lessons`,
+      type: 'Article',
+      fileUrl: `https://www.e-thaksalawa.moe.gov.lk/web/index.php?option=com_search&searchword=${q}`,
+    },
+    {
+      title: `${name} — further reading`,
+      type: 'Article',
+      fileUrl: `https://www.google.com/search?q=${q}+A%2FL+SFT+site%3Ae-thaksalawa.moe.gov.lk`,
+    },
+  ];
+}
+
 async function main() {
   // Clear existing data to prevent duplicates during testing
   await prisma.question.deleteMany();
@@ -131,7 +151,9 @@ async function main() {
         // the Resource Hub's inline player automatically.
         videoUrl: null,
         pastPapers: { create: pastPapersFor(mod.examPart) },
-        studyMaterials: { create: studyMaterialsFor(mod.name) },
+        studyMaterials: {
+          create: [...studyMaterialsFor(mod.name), ...articlesFor(mod.name)],
+        },
       },
     });
   }

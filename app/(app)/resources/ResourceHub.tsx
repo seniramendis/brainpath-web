@@ -1,24 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useMemo, useState } from "react";
 import {
   Play,
   FileText,
   Download,
+  Eye,
   X,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
   Atom,
   Dna,
   FlaskConical,
   Sigma,
-  Leaf,
-  ClipboardList,
+  BookOpen,
+  Newspaper,
+  Film,
 } from "lucide-react";
 import type { ModuleResource } from "@/lib/dal";
 
-const TABS = ["All", "Biology", "Physics", "Chemistry", "Maths"];
-
-// "Chem/Env" modules render under the Chemistry tab so the filter stays
+// "Chem/Env" modules render under the Chemistry group so the roadmap stays
 // simple for students.
 function subjectGroup(subject: string) {
   return subject.startsWith("Chem") ? "Chemistry" : subject;
@@ -31,21 +33,17 @@ const SUBJECT_ICON: Record<string, typeof Atom> = {
   Maths: Sigma,
 };
 
-const SUBJECT_IMAGE: Record<string, string> = {
-  Physics:
-    "https://images.unsplash.com/photo-1633493702341-4d04841df53b?auto=format&fit=crop&w=1200&q=80",
-  Biology:
-    "https://images.unsplash.com/photo-1628595351029-c2bf17511435?auto=format&fit=crop&w=1200&q=80",
-  Chemistry:
-    "https://images.unsplash.com/photo-1694230155228-cdde50083573?auto=format&fit=crop&w=1200&q=80",
-  Maths:
-    "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1200&q=80",
+const SUBJECT_BLURB: Record<string, string> = {
+  Biology: "Cells, systems & the living world",
+  Physics: "Forces, energy & measurement",
+  Chemistry: "Reactions, materials & industry",
+  Maths: "Statistics, geometry & problem solving",
 };
 
 function priorityMeta(tier: number) {
-  if (tier === 1) return { label: "High Priority", className: "text-rose-600" };
-  if (tier === 2) return { label: "Medium Priority", className: "text-orange-600" };
-  return { label: "Low Priority", className: "text-slate-500" };
+  if (tier === 1) return { label: "High Priority", dot: "bg-rose-500", text: "text-rose-600" };
+  if (tier === 2) return { label: "Medium Priority", dot: "bg-orange-500", text: "text-orange-600" };
+  return { label: "Low Priority", dot: "bg-slate-400", text: "text-slate-500" };
 }
 
 /** Converts a normal YouTube watch/share URL into an /embed/ URL. Returns
@@ -67,277 +65,392 @@ function toYoutubeEmbedUrl(url: string): string | null {
   }
 }
 
-function Modal({
-  onClose,
-  children,
-}: {
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.05] text-[#1d1d1f]/60 transition-colors hover:bg-black/[0.1]"
-          aria-label="Close"
-        >
-          <X className="h-4 w-4" />
-        </button>
-        {children}
-      </div>
-    </div>
-  );
+function isPdf(url: string) {
+  return url.toLowerCase().endsWith(".pdf");
 }
 
+type ResourceTab = "video" | "articles" | "materials";
+
 export default function ResourceHub({ modules }: { modules: ModuleResource[] }) {
-  const [activeTab, setActiveTab] = useState("All");
-  const [videoModule, setVideoModule] = useState<ModuleResource | null>(null);
-  const [resourceModule, setResourceModule] = useState<ModuleResource | null>(null);
+  const [activeSubject, setActiveSubject] = useState<string | null>(null);
+  const [activeModule, setActiveModule] = useState<ModuleResource | null>(null);
+  const [activeTab, setActiveTab] = useState<ResourceTab>("video");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const visible =
-    activeTab === "All"
-      ? modules
-      : modules.filter((m) => subjectGroup(m.subject) === activeTab);
+  // Group + A-Z sort every subject that has at least one module.
+  const subjects = useMemo(() => {
+    const map = new Map<string, ModuleResource[]>();
+    for (const mod of modules) {
+      const group = subjectGroup(mod.subject);
+      if (!map.has(group)) map.set(group, []);
+      map.get(group)!.push(mod);
+    }
+    return Array.from(map.entries())
+      .map(([name, mods]) => ({ name, mods }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [modules]);
 
-  return (
-    <>
-      {/* Tabs */}
-      <div className="-mx-4 flex items-center gap-1 overflow-x-auto border-b border-black/[0.06] px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
-        {TABS.map((tab) => {
-          const active = tab === activeTab;
-          const Icon = SUBJECT_ICON[tab];
+  // Modules for the active subject, A-Z by name -- this is the roadmap path.
+  const roadmapModules = useMemo(() => {
+    if (!activeSubject) return [];
+    const group = subjects.find((s) => s.name === activeSubject);
+    return (group?.mods ?? []).slice().sort((a, b) => a.name.localeCompare(b.name));
+  }, [activeSubject, subjects]);
+
+  function openModule(mod: ModuleResource) {
+    setActiveModule(mod);
+    setPreviewUrl(null);
+    setActiveTab(mod.videoUrl ? "video" : "materials");
+  }
+
+  function closeModule() {
+    setActiveModule(null);
+    setPreviewUrl(null);
+  }
+
+  // ---------------------------------------------------------------------
+  // Level 1: subject picker (roadmap.sh-style "choose your path" grid)
+  // ---------------------------------------------------------------------
+  if (!activeSubject) {
+    return (
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {subjects.map((s) => {
+          const Icon = SUBJECT_ICON[s.name] ?? BookOpen;
+          const total = s.mods.length;
+          const resourceCount = s.mods.reduce(
+            (n, m) => n + m.pastPapers.length + m.studyMaterials.length,
+            0
+          );
           return (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3.5 py-2.5 text-[13.5px] font-medium whitespace-nowrap transition-colors sm:px-4 ${
-                active
-                  ? "border-[#0071e3] text-[#0071e3]"
-                  : "border-transparent text-[#1d1d1f]/45 hover:text-[#1d1d1f]"
-              }`}
+              key={s.name}
+              onClick={() => setActiveSubject(s.name)}
+              className="group flex flex-col items-start rounded-2xl border border-black/[0.06] bg-white p-6 text-left transition-all hover:-translate-y-0.5 hover:border-[#0071e3]/25 hover:shadow-[0_8px_24px_-8px_rgba(0,0,0,0.12)]"
             >
-              {Icon && <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />}
-              {tab}
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0071e3]/10 text-[#0071e3]">
+                <Icon className="h-5 w-5" strokeWidth={1.75} />
+              </div>
+              <h3 className="mt-4 text-[16px] font-semibold tracking-tight text-[#1d1d1f]">
+                {s.name}
+              </h3>
+              <p className="mt-1 text-[12.5px] text-[#1d1d1f]/45">
+                {SUBJECT_BLURB[s.name] ?? "Syllabus modules & resources"}
+              </p>
+              <div className="mt-4 flex items-center gap-3 text-[11.5px] text-[#1d1d1f]/40">
+                <span>{total} {total === 1 ? "module" : "modules"}</span>
+                <span>·</span>
+                <span>{resourceCount} resources</span>
+              </div>
+              <span className="mt-4 flex items-center gap-1 text-[12.5px] font-medium text-[#0071e3] opacity-0 transition-opacity group-hover:opacity-100">
+                View roadmap <ChevronRight className="h-3.5 w-3.5" />
+              </span>
             </button>
           );
         })}
       </div>
+    );
+  }
 
-      {/* Cards */}
-      <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {visible.map((mod) => {
-          const group = subjectGroup(mod.subject);
-          const SubjectIcon = SUBJECT_ICON[group] ?? Leaf;
-          const image = SUBJECT_IMAGE[group] ?? SUBJECT_IMAGE.Chemistry;
-          const priority = priorityMeta(mod.tier);
-          const resourceCount = mod.pastPapers.length + mod.studyMaterials.length;
+  // ---------------------------------------------------------------------
+  // Level 2: roadmap.sh-style vertical path of modules for the subject
+  // ---------------------------------------------------------------------
+  return (
+    <>
+      <button
+        onClick={() => setActiveSubject(null)}
+        className="flex items-center gap-1 text-[13px] font-medium text-[#1d1d1f]/50 transition-colors hover:text-[#0071e3]"
+      >
+        <ChevronLeft className="h-3.5 w-3.5" />
+        All subjects
+      </button>
 
+      <div className="mt-5 flex items-center gap-3">
+        {(() => {
+          const Icon = SUBJECT_ICON[activeSubject] ?? BookOpen;
           return (
-            <div
-              key={mod.id}
-              className="group overflow-hidden rounded-2xl border border-black/[0.06] bg-white transition-colors hover:border-[#0071e3]/20"
-            >
-              {/* Thumbnail */}
-              <div className="relative h-44 overflow-hidden">
-                <Image
-                  src={image}
-                  alt={mod.name}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 1024px) 100vw, 400px"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0" />
-                <span
-                  className={`absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium backdrop-blur ${priority.className}`}
-                >
-                  ● {priority.label}
-                </span>
-                <span className="absolute bottom-3 left-3 flex items-center gap-1 rounded-md bg-white/90 px-2.5 py-1 text-[11px] font-medium text-[#1d1d1f] backdrop-blur">
-                  <SubjectIcon className="h-3 w-3" strokeWidth={1.75} />
-                  {mod.subject}
-                </span>
-              </div>
-
-              {/* Body */}
-              <div className="p-5">
-                <h3 className="text-[15px] font-semibold tracking-tight text-[#1d1d1f]">
-                  {mod.name}
-                </h3>
-                <div className="mt-3 flex items-center justify-between text-[13px]">
-                  <span className="text-[#1d1d1f]/40">Weightage</span>
-                  <span className="font-semibold text-[#1d1d1f]">
-                    {mod.priorityPercent}%
-                  </span>
-                </div>
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/[0.06]">
-                  <div
-                    className="h-full rounded-full bg-[#0071e3]"
-                    style={{ width: `${Math.min(mod.priorityPercent * 4, 100)}%` }}
-                  />
-                </div>
-
-                <p className="mt-3 text-[12px] text-[#1d1d1f]/40">
-                  {mod.pastPapers.length} past{" "}
-                  {mod.pastPapers.length === 1 ? "paper" : "papers"} ·{" "}
-                  {mod.studyMaterials.length}{" "}
-                  {mod.studyMaterials.length === 1 ? "material" : "materials"}
-                </p>
-
-                <div className="mt-5 flex gap-2.5">
-                  <button
-                    onClick={() => setVideoModule(mod)}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-full bg-[#0071e3] py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#0077ed]"
-                  >
-                    <Play className="h-3.5 w-3.5 fill-current" />
-                    Watch
-                  </button>
-                  <button
-                    onClick={() => setResourceModule(mod)}
-                    disabled={resourceCount === 0}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-full bg-black/[0.05] py-2.5 text-[13px] font-medium text-[#1d1d1f] transition-colors hover:bg-black/[0.08] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    Resources
-                  </button>
-                </div>
-              </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0071e3]/10 text-[#0071e3]">
+              <Icon className="h-5 w-5" strokeWidth={1.75} />
             </div>
           );
-        })}
+        })()}
+        <div>
+          <h2 className="text-[19px] font-semibold tracking-tight text-[#1d1d1f]">
+            {activeSubject} roadmap
+          </h2>
+          <p className="text-[12.5px] text-[#1d1d1f]/45">
+            {roadmapModules.length} modules, A–Z · tap a node for video, articles & PDFs
+          </p>
+        </div>
       </div>
 
-      {visible.length === 0 && (
-        <p className="py-16 text-center text-[13.5px] text-[#1d1d1f]/40">
-          No modules in this subject yet.
-        </p>
-      )}
-
-      {/* Video player modal */}
-      {videoModule && (
-        <Modal onClose={() => setVideoModule(null)}>
-          <div className="aspect-video w-full bg-black">
-            {videoModule.videoUrl && toYoutubeEmbedUrl(videoModule.videoUrl) ? (
-              <iframe
-                className="h-full w-full"
-                src={toYoutubeEmbedUrl(videoModule.videoUrl)!}
-                title={videoModule.name}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-white/60">
-                <Play className="h-8 w-8" strokeWidth={1.5} />
-                <p className="text-[13px]">
-                  {videoModule.videoUrl
-                    ? "This link isn't a playable YouTube video."
-                    : "Lecture video coming soon for this module."}
-                </p>
-              </div>
-            )}
-          </div>
-          <div className="p-5">
-            <p className="text-[11px] font-medium text-[#0071e3]">{videoModule.subject}</p>
-            <h3 className="mt-0.5 text-[16px] font-semibold text-[#1d1d1f]">
-              {videoModule.name}
-            </h3>
-            {videoModule.videoUrl && (
-              <a
-                href={videoModule.videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-block text-[12.5px] text-[#0071e3] hover:underline"
+      {/* Roadmap path */}
+      <div className="relative mt-8 pb-4 pl-2">
+        <div className="absolute top-2 bottom-2 left-[19px] w-px bg-black/[0.08] sm:left-[23px]" />
+        <div className="flex flex-col gap-3">
+          {roadmapModules.map((mod, i) => {
+            const priority = priorityMeta(mod.tier);
+            const resourceCount = mod.pastPapers.length + mod.studyMaterials.length;
+            return (
+              <button
+                key={mod.id}
+                onClick={() => openModule(mod)}
+                className="group relative flex items-center gap-4 rounded-2xl border border-black/[0.06] bg-white py-3.5 pr-4 pl-3 text-left transition-all hover:border-[#0071e3]/25 hover:shadow-[0_6px_20px_-10px_rgba(0,0,0,0.15)] sm:pl-4"
               >
-                Open on YouTube ↗
-              </a>
-            )}
-          </div>
-        </Modal>
-      )}
+                <span className="z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-white bg-[#f5f5f7] text-[11px] font-semibold text-[#1d1d1f]/50 shadow-[0_0_0_1px_rgba(0,0,0,0.06)] transition-colors group-hover:border-[#0071e3]/20 group-hover:bg-[#0071e3]/10 group-hover:text-[#0071e3]">
+                  {i + 1}
+                </span>
 
-      {/* Past papers + study material modal */}
-      {resourceModule && (
-        <Modal onClose={() => setResourceModule(null)}>
-          <div className="max-h-[80vh] overflow-y-auto p-6">
-            <p className="text-[11px] font-medium text-[#0071e3]">{resourceModule.subject}</p>
-            <h3 className="mt-0.5 text-[18px] font-semibold text-[#1d1d1f]">
-              {resourceModule.name}
-            </h3>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${priority.dot}`} />
+                    <span className={`text-[11px] font-medium ${priority.text}`}>
+                      {priority.label}
+                    </span>
+                  </div>
+                  <h3 className="mt-0.5 truncate text-[14.5px] font-semibold text-[#1d1d1f]">
+                    {mod.name}
+                  </h3>
+                  <p className="mt-0.5 text-[12px] text-[#1d1d1f]/40">
+                    {mod.priorityPercent}% weightage · Part {mod.examPart} ·{" "}
+                    {resourceCount} resources
+                    {mod.videoUrl ? " · video available" : ""}
+                  </p>
+                </div>
 
-            <div className="mt-6">
-              <h4 className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1d1d1f]/70">
-                <ClipboardList className="h-3.5 w-3.5" strokeWidth={1.75} />
-                Past Papers
-              </h4>
-              {resourceModule.pastPapers.length === 0 ? (
-                <p className="mt-2 text-[13px] text-[#1d1d1f]/40">
-                  No past papers added yet.
-                </p>
-              ) : (
-                <ul className="mt-2 divide-y divide-black/[0.06] rounded-xl border border-black/[0.06]">
-                  {resourceModule.pastPapers.map((paper) => (
-                    <li
-                      key={paper.id}
-                      className="flex items-center justify-between gap-3 px-4 py-3"
+                <ChevronRight className="h-4 w-4 shrink-0 text-[#1d1d1f]/20 transition-colors group-hover:text-[#0071e3]" />
+              </button>
+            );
+          })}
+        </div>
+
+        {roadmapModules.length === 0 && (
+          <p className="py-16 text-center text-[13.5px] text-[#1d1d1f]/40">
+            No modules in this subject yet.
+          </p>
+        )}
+      </div>
+
+      {/* Module detail panel with Video / Articles / Materials tabs */}
+      {activeModule && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center sm:p-4"
+          onClick={closeModule}
+        >
+          <div
+            className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeModule}
+              className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/[0.05] text-[#1d1d1f]/60 backdrop-blur transition-colors hover:bg-black/[0.1]"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="border-b border-black/[0.06] px-6 pt-6 pb-0">
+              <p className="text-[11px] font-medium text-[#0071e3]">
+                {activeModule.subject} · Part {activeModule.examPart}
+              </p>
+              <h3 className="mt-0.5 pr-8 text-[18px] font-semibold tracking-tight text-[#1d1d1f]">
+                {activeModule.name}
+              </h3>
+
+              {/* Tabs */}
+              <div className="mt-4 flex items-center gap-1">
+                {(
+                  [
+                    ["video", "Video", Film],
+                    ["articles", "Articles", Newspaper],
+                    ["materials", "Materials", FileText],
+                  ] as [ResourceTab, string, typeof Film][]
+                ).map(([id, label, Icon]) => {
+                  const active = activeTab === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => {
+                        setActiveTab(id);
+                        setPreviewUrl(null);
+                      }}
+                      className={`flex items-center gap-1.5 rounded-t-lg border-b-2 px-3.5 py-2 text-[13px] font-medium transition-colors ${
+                        active
+                          ? "border-[#0071e3] text-[#0071e3]"
+                          : "border-transparent text-[#1d1d1f]/45 hover:text-[#1d1d1f]"
+                      }`}
                     >
-                      <span className="text-[13.5px] text-[#1d1d1f]">{paper.title}</span>
-                      <a
-                        href={paper.fileUrl}
-                        download
-                        className="flex shrink-0 items-center gap-1.5 rounded-full bg-black/[0.05] px-3 py-1.5 text-[12px] font-medium text-[#1d1d1f] transition-colors hover:bg-black/[0.08]"
-                      >
-                        <Download className="h-3 w-3" />
-                        Download
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                      <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="mt-6">
-              <h4 className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1d1d1f]/70">
-                <FileText className="h-3.5 w-3.5" strokeWidth={1.75} />
-                Study Material
-              </h4>
-              {resourceModule.studyMaterials.length === 0 ? (
-                <p className="mt-2 text-[13px] text-[#1d1d1f]/40">
-                  No study material added yet.
-                </p>
-              ) : (
-                <ul className="mt-2 divide-y divide-black/[0.06] rounded-xl border border-black/[0.06]">
-                  {resourceModule.studyMaterials.map((material) => (
-                    <li
-                      key={material.id}
-                      className="flex items-center justify-between gap-3 px-4 py-3"
-                    >
-                      <div>
-                        <span className="text-[13.5px] text-[#1d1d1f]">{material.title}</span>
-                        <span className="ml-2 rounded-full bg-black/[0.05] px-2 py-0.5 text-[10.5px] font-medium text-[#1d1d1f]/50">
-                          {material.type}
-                        </span>
+            <div className="flex-1 overflow-y-auto">
+              {/* Video tab */}
+              {activeTab === "video" && (
+                <div>
+                  <div className="aspect-video w-full bg-black">
+                    {activeModule.videoUrl && toYoutubeEmbedUrl(activeModule.videoUrl) ? (
+                      <iframe
+                        className="h-full w-full"
+                        src={toYoutubeEmbedUrl(activeModule.videoUrl)!}
+                        title={activeModule.name}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-white/60">
+                        <Play className="h-8 w-8" strokeWidth={1.5} />
+                        <p className="text-[13px]">
+                          {activeModule.videoUrl
+                            ? "This link isn't a playable YouTube video."
+                            : "Lecture video coming soon for this module."}
+                        </p>
                       </div>
+                    )}
+                  </div>
+                  {activeModule.videoUrl && (
+                    <div className="p-5">
                       <a
-                        href={material.fileUrl}
-                        download
-                        className="flex shrink-0 items-center gap-1.5 rounded-full bg-black/[0.05] px-3 py-1.5 text-[12px] font-medium text-[#1d1d1f] transition-colors hover:bg-black/[0.08]"
+                        href={activeModule.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[12.5px] text-[#0071e3] hover:underline"
                       >
-                        <Download className="h-3 w-3" />
-                        Download
+                        Open on YouTube <ExternalLink className="h-3 w-3" />
                       </a>
-                    </li>
-                  ))}
-                </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Articles tab */}
+              {activeTab === "articles" && (
+                <div className="p-6">
+                  {(() => {
+                    const articles = activeModule.studyMaterials.filter(
+                      (m: { type: string }) => m.type === "Article"
+                    );
+                    if (articles.length === 0) {
+                      return (
+                        <p className="py-10 text-center text-[13px] text-[#1d1d1f]/40">
+                          No articles linked for this module yet.
+                        </p>
+                      );
+                    }
+                    return (
+                      <ul className="divide-y divide-black/[0.06] rounded-xl border border-black/[0.06]">
+                        {articles.map((a: { id: string; title: string; fileUrl: string }) => (
+                          <li key={a.id}>
+                            <a
+                              href={a.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-between gap-3 px-4 py-3.5 transition-colors hover:bg-black/[0.02]"
+                            >
+                              <span className="flex items-center gap-2.5 text-[13.5px] text-[#1d1d1f]">
+                                <Newspaper className="h-4 w-4 shrink-0 text-[#1d1d1f]/35" strokeWidth={1.75} />
+                                {a.title}
+                              </span>
+                              <ExternalLink className="h-3.5 w-3.5 shrink-0 text-[#1d1d1f]/30" />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Materials tab: past papers + notes/slides, with inline PDF preview */}
+              {activeTab === "materials" && (
+                <div className="p-6">
+                  {(() => {
+                    const materials = [
+                      ...activeModule.pastPapers.map((p: { id: string; title: string; year: number; fileUrl: string }) => ({
+                        id: p.id,
+                        title: p.title,
+                        type: `Past Paper · ${p.year}`,
+                        fileUrl: p.fileUrl,
+                      })),
+                      ...activeModule.studyMaterials
+                        .filter((m: { type: string }) => m.type !== "Article")
+                        .map((m: { id: string; title: string; type: string; fileUrl: string }) => ({
+                          id: m.id,
+                          title: m.title,
+                          type: m.type,
+                          fileUrl: m.fileUrl,
+                        })),
+                    ];
+
+                    if (materials.length === 0) {
+                      return (
+                        <p className="py-10 text-center text-[13px] text-[#1d1d1f]/40">
+                          No past papers or notes added yet.
+                        </p>
+                      );
+                    }
+
+                    return (
+                      <ul className="space-y-2.5">
+                        {materials.map((m) => {
+                          const open = previewUrl === m.fileUrl;
+                          return (
+                            <li
+                              key={m.id}
+                              className="overflow-hidden rounded-xl border border-black/[0.06]"
+                            >
+                              <div className="flex items-center justify-between gap-3 px-4 py-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-[13.5px] text-[#1d1d1f]">
+                                    {m.title}
+                                  </p>
+                                  <span className="mt-0.5 inline-block rounded-full bg-black/[0.05] px-2 py-0.5 text-[10.5px] font-medium text-[#1d1d1f]/50">
+                                    {m.type}
+                                  </span>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2">
+                                  {isPdf(m.fileUrl) && (
+                                    <button
+                                      onClick={() =>
+                                        setPreviewUrl(open ? null : m.fileUrl)
+                                      }
+                                      className="flex items-center gap-1.5 rounded-full bg-black/[0.05] px-3 py-1.5 text-[12px] font-medium text-[#1d1d1f] transition-colors hover:bg-black/[0.08]"
+                                    >
+                                      <Eye className="h-3 w-3" />
+                                      {open ? "Hide" : "Preview"}
+                                    </button>
+                                  )}
+                                  <a
+                                    href={m.fileUrl}
+                                    download
+                                    className="flex items-center gap-1.5 rounded-full bg-[#0071e3] px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-[#0077ed]"
+                                  >
+                                    <Download className="h-3 w-3" />
+                                    Download
+                                  </a>
+                                </div>
+                              </div>
+                              {open && (
+                                <iframe
+                                  src={m.fileUrl}
+                                  title={m.title}
+                                  className="h-[420px] w-full border-t border-black/[0.06] bg-[#f5f5f7]"
+                                />
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    );
+                  })()}
+                </div>
               )}
             </div>
           </div>
-        </Modal>
+        </div>
       )}
     </>
   );
