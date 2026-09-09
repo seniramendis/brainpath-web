@@ -3,6 +3,9 @@ import { defineConfig } from "prisma/config";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
+  migrations: {
+    seed: "npx tsx prisma/seed.ts",
+  },
   datasource: {
     // Used by the Prisma CLI (migrate, studio, db push) — the app's own
     // client connection is configured separately in lib/db.ts via a driver
